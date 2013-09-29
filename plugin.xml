@@ -37,7 +37,7 @@
         </config-file>
 
         <js-module src="www/ios/app.js" name="app">
-            <merges target="navigator.app" />
+            <clobbers target="navigator.app" />
         </js-module>
         <header-file src="src/ios/XAppExt.h" />
         <source-file src="src/ios/XAppExt.m" />
