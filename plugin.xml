@@ -10,10 +10,6 @@
     <license>GPLv3</license>
     <keywords>cordova, xface, XApp</keywords>
 
-    <js-module src="www/app.js" name="app">
-        <clobbers target="navigator.app" />
-    </js-module>
-
     <!-- wp8 -->
     <platform name="wp8">
         <config-file target="config.xml" parent="/*">
