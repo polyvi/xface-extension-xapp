@@ -1,4 +1,4 @@
-﻿/*
+/*
  This file was modified from or inspired by Apache Cordova.
 
  Licensed to the Apache Software Foundation (ASF) under one
@@ -59,31 +59,6 @@ var app = function() {
 app.prototype.openUrl = function(url, successCallback, errorCallback){
     argscheck.checkArgs('sFF', 'app.openUrl', arguments);
     exec(successCallback, errorCallback, "App", "openUrl", [url]);
-};
-
-/**
- * 获取渠道信息（Android, iOS, Wp8）
-  @example
-        function error() {
-            console.log("getChannel error”);
-        }
-        function success(channel) {
-            console.log("channel id: " + channel.id);
-            console.log("channel name: " + channel.name);
-        }
-        navigator.app.getChannel(success, error);
- * @method getChannel
- * @param {Function} successCallback 成功回调函数
- * @param {object} successCallback.channel 渠道信息对象
- * @param {String} successCallback.channel.id 渠道唯一标识符
- * @param {String} successCallback.channel.name 渠道名称
- * @param {Function} [errorCallback]   失败回调函数
- * @platform Android, iOS, Wp8
- * @since 3.1.0
- */
-app.prototype.getChannel = function(successCallback, errorCallback){
-    argscheck.checkArgs('fF', 'app.getChannel', arguments);
-    exec(successCallback, errorCallback, "Channel", "getChannel", []);
 };
 
 /**
