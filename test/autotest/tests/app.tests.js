@@ -9,7 +9,7 @@ describe('App (navigator.app)', function () {
             expect(typeof navigator.app.openUrl == 'function').toBe(true);
         });
     });
-    if (isAndroid()) {
+    if (isAndroid() || isWindowsPhone()) {
         describe("exitApp", function() {
                 it("should exist", function() {
                     expect(typeof navigator.app.exitApp).toBeDefined();
@@ -17,17 +17,18 @@ describe('App (navigator.app)', function () {
                 });
         });
 
-        describe("install", function() {
-                it("should exist", function() {
-                    expect(typeof navigator.app.install).toBeDefined();
-                    expect(typeof navigator.app.install == 'function').toBe(true);
-                });
-        });
-
         describe("backHistory", function() {
                 it("should exist", function() {
                     expect(typeof navigator.app.backHistory).toBeDefined();
                     expect(typeof navigator.app.backHistory == 'function').toBe(true);
+                });
+        });
+    }
+    if (isAndroid()) {
+        describe("install", function() {
+                it("should exist", function() {
+                    expect(typeof navigator.app.install).toBeDefined();
+                    expect(typeof navigator.app.install == 'function').toBe(true);
                 });
         });
 
