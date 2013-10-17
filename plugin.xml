@@ -10,10 +10,6 @@
     <license>GPLv3</license>
     <keywords>cordova, xface, XApp</keywords>
 
-    <js-module src="www/app.js" name="app">
-        <clobbers target="navigator.app" />
-    </js-module>
-
     <!-- wp8 -->
     <platform name="wp8">
         <config-file target="config.xml" parent="/*">
@@ -21,6 +17,10 @@
                 <param name="wp-package" value="App"/>
             </feature>
         </config-file>
+		
+		<js-module src="www/app.js" name="app">
+            <clobbers target="navigator.app" />
+        </js-module>
 
         <js-module src="www/wp8/app.js" name="app-wp8">
             <merges target="navigator.app" />
@@ -35,8 +35,28 @@
                 <param name="ios-package" value="XAppExt"/>
             </feature>
         </config-file>
+		
+		<js-module src="www/app.js" name="app">
+           <clobbers target="navigator.app" />
+        </js-module>
 
         <header-file src="src/ios/XAppExt.h" />
         <source-file src="src/ios/XAppExt.m" />
     </platform>
+	
+	 <!-- android -->
+    <platform name="android">
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="XApp">
+                <param name="android-package" value="com.polyvi.xface.extension.app.XAppExt"/>
+            </feature>
+        </config-file>
+		<js-module src="www/android/app.js" name="app">
+            <merges target="navigator.app" />
+        </js-module>
+        <config-file target="AndroidManifest.xml" parent="/*">
+             <uses-permission android:name="android.permission.INTERNET" />
+        </config-file>
+        <source-file src="src/android/XAppExt.java" target-dir="src/com/polyvi/xface/extension/app" />
+     </platform>
 </plugin>
