@@ -54,6 +54,9 @@
 		<js-module src="www/android/app.js" name="app">
             <merges target="navigator.app" />
         </js-module>
+		<js-module src="www/android/SysComponent.js" name="SysComponent">
+            <clobbers target="SysComponent" />
+        </js-module>
         <config-file target="AndroidManifest.xml" parent="/*">
              <uses-permission android:name="android.permission.INTERNET" />
         </config-file>
