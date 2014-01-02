@@ -1,3 +1,4 @@
+
 /*
  This file was modified from or inspired by Apache Cordova.
 
@@ -17,7 +18,7 @@
  KIND, either express or implied. See the License for the
  specific language governing permissions and limitations
  under the License.
- */
+*/
 
 package com.polyvi.xface.extension.app;
 
@@ -29,7 +30,6 @@ import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -38,6 +38,7 @@ import android.provider.Settings;
 import android.util.Log;
 
 import com.polyvi.xface.core.XConfiguration;
+import com.polyvi.xface.util.XAppUtils;
 import com.polyvi.xface.util.XConstant;
 import com.polyvi.xface.util.XFileUtils;
 import com.polyvi.xface.util.XLog;
@@ -107,7 +108,8 @@ public class XAppExt extends CordovaPlugin {
                     return true;
                 }
             } else if (COMMAND_START_NATIVE_APP.equalsIgnoreCase(action)) {
-                if (!startNativeApp(cordova.getActivity(), args.getString(0),
+                if (!XAppUtils.startNativeApp(cordova.getActivity(),
+                        args.getString(0), XConstant.TAG_APP_START_PARAMS,
                         args.getString(1))) {
                     PluginResult result = new PluginResult(
                             PluginResult.Status.ERROR);
@@ -264,39 +266,6 @@ public class XAppExt extends CordovaPlugin {
         } else {
             return false;
         }
-    }
-
-    /**
-     * 启动应用程序
-     *
-     * @param packageName
-     *            应用程序包的名字
-     * @param parameter
-     *            应用程序参数
-     * @return 成功返回true,失败返回false
-     */
-    public boolean startNativeApp(Context context, String packageName,
-            String parameter) {
-        if (null == packageName) {
-            return false;
-        }
-
-        PackageManager pm = context.getPackageManager();
-        Intent intent = null;
-        try {
-            intent = pm.getLaunchIntentForPackage(packageName);
-            if (null == intent) {
-                return false;
-            }
-            intent.putExtra(XConstant.TAG_APP_START_PARAMS, parameter);
-            context.startActivity(intent);
-        } catch (Exception e) {
-            XLog.e(CLASS_NAME, "error when startNativeApp:" + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-
-        return true;
     }
 
     /**
