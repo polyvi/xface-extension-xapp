@@ -21,3 +21,6 @@
 -->
 
 # Release Notes
+### 1.0.0 Tue Jan 07 2014 16:08:57 GMT+0800 (CST)
+ *  [android][Sync xFace3.1 core]Move startNativeApp method from XAppExt to XAppUtils
+ *  added jasmine tests unique id
