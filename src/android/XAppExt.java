@@ -230,11 +230,16 @@ public class XAppExt extends CordovaPlugin {
     private Uri getUrlFromPath(String path) {
         String workspace = ((XAppWebView) webView).getOwnerApp().getWorkSpace();
         XPathResolver pathResolver = new XPathResolver(path, workspace);
+        String absPath = pathResolver.resolve();
+        if(null == absPath){
+            return Uri.parse(path);
+        }
         Uri uri = null;
-        if (path.startsWith(XConstant.HTTP_SCHEME)) {
-            uri = Uri.parse(path);
+        if (path.startsWith(XConstant.HTTP_SCHEME)
+                || path.startsWith(XConstant.HTTPS_SCHEME)) {
+            uri = Uri.parse(absPath);
         } else {
-            File file = new File(pathResolver.resolve());
+            File file = new File(absPath);
             if (file.exists()) {
                 uri = Uri.fromFile(file);
             }
