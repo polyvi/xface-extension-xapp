@@ -22,23 +22,35 @@
 
 package com.polyvi.xface.extension.app;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.PixelFormat;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.provider.Settings;
-import android.util.Log;
 
 import com.polyvi.xface.core.XConfiguration;
 import com.polyvi.xface.util.XAppUtils;
+import com.polyvi.xface.util.XBase64;
 import com.polyvi.xface.util.XConstant;
 import com.polyvi.xface.util.XFileUtils;
 import com.polyvi.xface.util.XLog;
@@ -47,7 +59,7 @@ import com.polyvi.xface.util.XStringUtils;
 import com.polyvi.xface.view.XAppWebView;
 
 public class XAppExt extends CordovaPlugin {
-    private static final String CLASS_NAME = "XAppExt";
+    private static final String CLASS_NAME = XAppExt.class.getSimpleName();
     private static final String COMMAND_OPEN_URL = "openUrl";
     private static final String COMMAND_INSTALL = "install";
     private static final String COMMAND_START_SYSTEM_COMPONENT = "startSystemComponent";
@@ -55,8 +67,18 @@ public class XAppExt extends CordovaPlugin {
     private static final String COMMAND_START_NATIVE_APP = "startNativeApp";
     private static final String COMMAND_IS_NATIVE_APP_INSTALLED = "isNativeAppInstalled";
     private static final String COMMAND_TEL_LINK_ENABLE = "telLinkEnable";
+    private static final String COMMAND_QUERY_INSTALLED_NATIVEAPP = "queryInstalledNativeApp";
+    private static final String COMMAND_UNINSTALL_NATIVEAPP = "uninstallNativeApp";
 
     private static final String APK_TYPE = "application/vnd.android.package-archive";
+
+    /** 定义一些tag常量 */
+    private static final String TAG_APP_NAME = "name";
+    private static final String TAG_APP_ID = "id";
+    private static final String TAG_APP_ICON = "icon";
+
+    private BroadcastReceiver mInstallerReceiver;
+    private String uninstallPackageName;
 
     /** 要启动的component名字 */
     public enum SysComponent {
@@ -93,7 +115,7 @@ public class XAppExt extends CordovaPlugin {
                         .getWorkSpace();
                 XPathResolver pathResolver = new XPathResolver(
                         args.getString(0), workspace);
-                install(pathResolver.resolve());
+                install(pathResolver.resolve(), callbackContext);
             } else if (COMMAND_START_SYSTEM_COMPONENT.equals(action)) {
                 if (!startSystemComponent(args.getInt(0))) {
                     String errorResult = "Unsupported component:: "
@@ -128,11 +150,20 @@ public class XAppExt extends CordovaPlugin {
             } else if (COMMAND_TEL_LINK_ENABLE.equals(action)) {
                 XConfiguration.getInstance().setTelLinkEnabled(
                         args.optBoolean(0, true));
+            } else if (COMMAND_QUERY_INSTALLED_NATIVEAPP.equals(action)) {
+                PluginResult result = new PluginResult(PluginResult.Status.OK,
+                        queryInstalledNativeApp(args.getString(0)));
+                callbackContext.sendPluginResult(result);
+                return true;
+            } else if (COMMAND_UNINSTALL_NATIVEAPP.equals(action)) {
+                uninstallNativeApp(args.getString(0), callbackContext);
+            } else {
+                return false;
             }
             callbackContext.success();
             return true;
         } catch (IllegalArgumentException e) {
-            Log.e(CLASS_NAME, e.getMessage());
+            XLog.e(CLASS_NAME, e.getMessage());
             callbackContext.sendPluginResult(new PluginResult(
                     PluginResult.Status.ERROR));
         }
@@ -147,7 +178,6 @@ public class XAppExt extends CordovaPlugin {
             intent.setDataAndType(uri,
                     XStringUtils.isEmptyString(mimeType) ? "*/*" : mimeType);
         }
-
     }
 
     private void setDirPermisionUntilWorkspace(Uri uri) {
@@ -172,8 +202,10 @@ public class XAppExt extends CordovaPlugin {
      *
      * @param path
      *            要安装的apk本地文件的路径
+     * @param callbackCtx
      */
-    public void install(String path) {
+    public void install(String path, CallbackContext callbackCtx) {
+        registerInstallerReceiver(callbackCtx);
         Intent intent = new Intent(Intent.ACTION_VIEW);
         // 修改文件的权限为其它用户可读, 否则系统apk安装程序无法安装
         XFileUtils.setPermission(XFileUtils.READABLE_BY_OTHER, path);
@@ -231,7 +263,7 @@ public class XAppExt extends CordovaPlugin {
         String workspace = ((XAppWebView) webView).getOwnerApp().getWorkSpace();
         XPathResolver pathResolver = new XPathResolver(path, workspace);
         String absPath = pathResolver.resolve();
-        if(null == absPath){
+        if (null == absPath) {
             return Uri.parse(path);
         }
         Uri uri = null;
@@ -295,4 +327,156 @@ public class XAppExt extends CordovaPlugin {
             return false;
         }
     }
+
+    /**
+     * 获取安装的程序列表包含系统应用和用户安装的应用
+     *
+     * @param type
+     *            应用类型。"0":代表所有应用，"1"：代表用户安装的应用,"2":代表系统应用
+     * @return 包含应用信息的应用列表
+     * @throws JSONException
+     */
+    public JSONArray queryInstalledNativeApp(String type) throws JSONException {
+        JSONArray appArray = new JSONArray();
+        int appType = Integer.valueOf(type);
+        PackageManager pm = cordova.getActivity().getPackageManager();
+        List<PackageInfo> packages = pm.getInstalledPackages(0);
+        for (PackageInfo packageInfo : packages) {
+            if (cordova.getActivity().getPackageName()
+                    .equals(packageInfo.applicationInfo.packageName))
+                continue;
+            switch (appType) {
+            case 0:
+                putParamsInJsonObj(appArray, pm, packageInfo);
+                break;
+            case 1:
+                if ((packageInfo.applicationInfo.flags & 0x1) != 0)
+                    continue;
+                putParamsInJsonObj(appArray, pm, packageInfo);
+
+                break;
+            case 2:
+                if ((packageInfo.applicationInfo.flags & 0x1) == 0)
+                    continue;
+                putParamsInJsonObj(appArray, pm, packageInfo);
+            }
+        }
+        return appArray;
+    }
+
+    /**
+     * 将得到的结果参数放入json对象中
+     *
+     * @param appArray
+     * @param pm
+     * @param packageInfo
+     * @throws JSONException
+     */
+    private void putParamsInJsonObj(JSONArray appArray, PackageManager pm,
+            PackageInfo packageInfo) throws JSONException {
+        JSONObject obj = new JSONObject();
+        obj.put(TAG_APP_NAME,
+                pm.getApplicationLabel(packageInfo.applicationInfo).toString());
+        obj.put(TAG_APP_ID, packageInfo.applicationInfo.packageName);
+        obj.put(TAG_APP_ICON, drawableToBase64(pm
+                .getApplicationIcon(packageInfo.applicationInfo)));
+        appArray.put(obj);
+    }
+
+    /**
+     * 卸载native应用
+     *
+     * @param appId
+     *            应用的包名
+     * @param callbackCtx
+     */
+    public void uninstallNativeApp(String appId, CallbackContext callbackCtx) {
+        registerInstallerReceiver(callbackCtx);
+        uninstallPackageName = appId;
+        Uri packageURI = Uri.parse("package:" + appId);
+        Intent uninstallIntent = new Intent(Intent.ACTION_DELETE, packageURI);
+        cordova.getActivity().startActivity(uninstallIntent);
+    }
+
+    /**
+     * 将图片进行base64编码
+     *
+     * @param drawable
+     * @return
+     */
+    private String drawableToBase64(Drawable drawable) {
+        int width = drawable.getIntrinsicWidth();
+        int height = drawable.getIntrinsicHeight();
+        Bitmap bitmap = Bitmap.createBitmap(width, height, drawable
+                .getOpacity() != PixelFormat.OPAQUE ? Bitmap.Config.ARGB_8888
+                : Bitmap.Config.RGB_565);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, width, height);
+        drawable.draw(canvas);
+        String result = null;
+        ByteArrayOutputStream baos = null;
+        try {
+            if (bitmap != null) {
+                baos = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+                baos.flush();
+                baos.close();
+                byte[] bitmapBytes = baos.toByteArray();
+                result = XBase64.encodeToString(bitmapBytes, XBase64.DEFAULT);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (baos != null) {
+                    baos.flush();
+                    baos.close();
+                }
+                if (bitmap != null) {
+                    bitmap.recycle();
+                    bitmap = null;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return result;
+    }
+
+    private void registerInstallerReceiver(final CallbackContext callbackCtx) {
+        if (null == mInstallerReceiver) {
+            mInstallerReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    if (intent.getAction().equals(
+                            "android.intent.action.PACKAGE_REMOVED")
+                            && null != uninstallPackageName) {
+                        if (uninstallPackageName.equals(intent.getDataString()
+                                .substring(8))) {
+                            PluginResult result = new PluginResult(
+                                    PluginResult.Status.OK);
+                            callbackCtx.sendPluginResult(result);
+                        }
+                    }
+                    if (intent.getAction().equals(
+                            "android.intent.action.PACKAGE_ADDED")) {
+                        PluginResult result = new PluginResult(
+                                PluginResult.Status.OK);
+                        callbackCtx.sendPluginResult(result);
+                    }
+                }
+            };
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(Intent.ACTION_PACKAGE_ADDED);
+            filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
+            filter.addDataScheme("package");
+            cordova.getActivity().registerReceiver(mInstallerReceiver, filter);
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        cordova.getActivity().unregisterReceiver(mInstallerReceiver);
+    }
+
 }

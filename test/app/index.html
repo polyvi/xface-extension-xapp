@@ -240,6 +240,28 @@
         document.getElementById('result').innerText = "fail";
     }
 
+    function getAppInfo(type) {
+        document.getElementById('status').innerText = "getAppInfo";
+        navigator.app.queryInstalledNativeApp(type,success,fail);
+    }
+
+    function success(apps) {
+        document.getElementById('result').innerText = "success";
+        var count = apps.length;
+        alert(count + " InstalledApps.");
+            for(var i = 0; i < count; i++) {
+                console.log(apps[i].id);
+                console.log(apps[i].name);
+                console.log(apps[i].icon);
+            }
+    }
+
+    function uninstallNativeApp(appId) {
+        document.getElementById('status').innerText = "uninstallNativeApp";
+        document.getElementById('result').innerText = "";
+        navigator.app.uninstallNativeApp(appId, win, fail);
+    }
+
 </script>
 
   </head>
@@ -275,6 +297,8 @@
         18.exitApp 点击exitApp，观察是否成功退出应用<br/>
         19.isNativeAppInstalled, 查看给定appId的应用是否被安装。点击startWorkspaceApp按钮，安装计算器应用，再点击isNativeAppInstalled显示success，则测试通过<br/>
         20.setTelLinkEnable设置是否支持点击view上的数字触发联系人添加操作,如果选true，点击添加123456能弹出联系人添加操作，否则不弹出<br/>
+        21.(只测Android)getAppInfo,点击getAppInfo,查看是否弹出对话框显示用户安装应用的个数<br/>
+        22.(只测Android)uninstallNativeApp,先执行3，将test.apk安装完成,然后再点击uninstallNativeApp,程序被正确卸载,表示测试通过<br/>
     </android>
     </div>
     <div id="info">
@@ -311,6 +335,8 @@
     <div class="btn large" data-platform="android" onclick="exit();">exitApp</div>
     <div class="btn large" data-platform="android" onclick="isNativeAppInstalled();">isNativeAppInstalled</div>
     <div class="btn large" data-platform="android" onclick="setTelLinkEnable();">setTelLinkEnable</div>
+    <div class="btn large" data-platform="android" onclick="getAppInfo('1');">getAppInfo</div>
+    <div class="btn large" data-platform="android" onclick="uninstallNativeApp('com.polyvi.largeFileTest');">uninstallNativeApp</div>
     <h2> </h2><div class="backBtn" onclick="backHome();">Back</div>
   </body>
 </html>
