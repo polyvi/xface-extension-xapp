@@ -476,7 +476,9 @@ public class XAppExt extends CordovaPlugin {
 
     @Override
     public void onDestroy() {
-        cordova.getActivity().unregisterReceiver(mInstallerReceiver);
+        if (null != mInstallerReceiver) {
+            cordova.getActivity().unregisterReceiver(mInstallerReceiver);
+        }
     }
 
 }
