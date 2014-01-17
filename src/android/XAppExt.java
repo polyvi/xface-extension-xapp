@@ -1,4 +1,3 @@
-
 /*
  This file was modified from or inspired by Apache Cordova.
 
@@ -18,7 +17,7 @@
  KIND, either express or implied. See the License for the
  specific language governing permissions and limitations
  under the License.
-*/
+ */
 
 package com.polyvi.xface.extension.app;
 
@@ -46,6 +45,7 @@ import android.graphics.Canvas;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.Settings;
 
 import com.polyvi.xface.core.XConfiguration;
@@ -124,10 +124,15 @@ public class XAppExt extends CordovaPlugin {
                     return true;
                 }
             } else if (COMMAND_SET_WIFI_SLEEP_POLICY.equals(action)) {
-                if (!setWifiSleepPolicy(args.getString(0))) {
-                    String errorResult = "set wifi sleep policy error";
-                    callbackContext.error(errorResult);
-                    return true;
+                if (Build.VERSION.SDK_INT >= 17) {
+                    cordova.getActivity().startActivity(
+                            new Intent(Settings.ACTION_WIFI_SETTINGS));
+                } else {
+                    if (!setWifiSleepPolicy(args.getString(0))) {
+                        String errorResult = "set wifi sleep policy error";
+                        callbackContext.error(errorResult);
+                        return true;
+                    }
                 }
             } else if (COMMAND_START_NATIVE_APP.equalsIgnoreCase(action)) {
                 if (!XAppUtils.startNativeApp(cordova.getActivity(),
