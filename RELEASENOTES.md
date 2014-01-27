@@ -24,3 +24,11 @@
 ### 1.0.0 Tue Jan 07 2014 16:08:57 GMT+0800 (CST)
  *  [android][Sync xFace3.1 core]Move startNativeApp method from XAppExt to XAppUtils
  *  added jasmine tests unique id
+### 1.0.1 Mon Jan 27 2014 15:56:34 GMT+0800 (CST)
+ *  batch modify .reviewboard
+ *  #6:set the Wifi sleep is fail
+ *  polyvi/xface-extension-xapp#2[polyvi/xface-extension-xapp]Fix open pdf file and doc file failed
+ *  [android]Fix crash when xFace was quitted, and user registered app ext but didn't use it at same time
+ *  [android][Sync xFace3.1]Add interface 'queryInstalledNativeApp' and 'uninstallNativeApp'
+ *  [android][Sync xFace3.1]1.[Fixed bug on Bestv] Interface 'openUrl' of app extension can not work as expected;2.Interface 'openUrl' support https protocol
+ *  Incremented plugin version on dev branch to 1.0.1-dev
