@@ -111,11 +111,11 @@ public class XAppExt extends CordovaPlugin {
                 setIntentByUri(intent, uri);
                 cordova.getActivity().startActivity(intent);
             } else if (COMMAND_INSTALL.equals(action)) {
-                String workspace = ((XAppWebView) webView).getOwnerApp()
+                String workspace = ((XAppWebView) this.webView).getOwnerApp()
                         .getWorkSpace();
                 XPathResolver pathResolver = new XPathResolver(
                         args.getString(0), workspace);
-                install(pathResolver.resolve(), callbackContext);
+                install(pathResolver.resolve(this.webView.getResourceApi()), callbackContext);
             } else if (COMMAND_START_SYSTEM_COMPONENT.equals(action)) {
                 if (!startSystemComponent(args.getInt(0))) {
                     String errorResult = "Unsupported component:: "
@@ -192,7 +192,7 @@ public class XAppExt extends CordovaPlugin {
             return;
         }
         String filePath = uri.getPath();
-        String workspace = ((XAppWebView) webView).getOwnerApp().getWorkSpace();
+        String workspace = ((XAppWebView) this.webView).getOwnerApp().getWorkSpace();
         File fileObj = new File(filePath);
         do {
             String path = fileObj.getAbsolutePath();
@@ -265,9 +265,9 @@ public class XAppExt extends CordovaPlugin {
      *            url路径 return Uri 成功:uri,失败:null。
      */
     private Uri getUrlFromPath(String path) {
-        String workspace = ((XAppWebView) webView).getOwnerApp().getWorkSpace();
+        String workspace = ((XAppWebView) this.webView).getOwnerApp().getWorkSpace();
         XPathResolver pathResolver = new XPathResolver(path, workspace);
-        String absPath = pathResolver.resolve();
+        String absPath = pathResolver.resolve(this.webView.getResourceApi());
         if (null == absPath) {
             return Uri.parse(path);
         }
