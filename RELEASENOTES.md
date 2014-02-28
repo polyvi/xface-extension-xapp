@@ -32,3 +32,10 @@
  *  [android][Sync xFace3.1]Add interface 'queryInstalledNativeApp' and 'uninstallNativeApp'
  *  [android][Sync xFace3.1]1.[Fixed bug on Bestv] Interface 'openUrl' of app extension can not work as expected;2.Interface 'openUrl' support https protocol
  *  Incremented plugin version on dev branch to 1.0.1-dev
+
+## 1.0.2 (Fri Feb 28 2014)
+
+
+ *  [Android]OpenUrl and install interfaces support url 'cdvfile://localhost/<filesystemType>/<path to file>' in xapp plugin
+ *  issue 1 [android][Fix bug]Fix 'loadUrlByAppCleanHistory' button can't be used in test page. Bug reason:load url interface params have been changed in cordova 3.3. Solution:Use new interface params
+ *  Incremented plugin version on dev branch to 1.0.2-dev
