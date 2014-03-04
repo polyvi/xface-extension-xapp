@@ -79,7 +79,7 @@
     function install() {
 		document.getElementById('status').innerText = "install";
         document.getElementById('result').innerText = "";
-        navigator.app.install("/test.apk",win, fail);
+        navigator.app.install("test.apk",win, fail);
     }
 
     function startVpn() {
