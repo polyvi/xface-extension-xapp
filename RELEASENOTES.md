@@ -39,3 +39,13 @@
  *  [Android]OpenUrl and install interfaces support url 'cdvfile://localhost/<filesystemType>/<path to file>' in xapp plugin
  *  issue 1 [android][Fix bug]Fix 'loadUrlByAppCleanHistory' button can't be used in test page. Bug reason:load url interface params have been changed in cordova 3.3. Solution:Use new interface params
  *  Incremented plugin version on dev branch to 1.0.2-dev
+
+
+## 1.0.3 (Wed Mar 19 2014)
+
+
+ *  renamed app.js to xapp.js, to avoid overwritten while performing doc integration
+ *  reduced size of testing data
+ *  issue 3 App: setTelLinkEnable does not work.Solution:delete this test
+ *  fix bug http://gitlab.polyvi.com/xface/xface-extension-xapp/issues/2
+ *  Incremented plugin version on dev branch to 1.0.3-dev
