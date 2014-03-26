@@ -58,7 +58,8 @@
             <clobbers target="SysComponent" />
         </js-module>
         <config-file target="AndroidManifest.xml" parent="/*">
-             <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.WRITE_SETTINGS" />
         </config-file>
         <source-file src="src/android/XAppExt.java" target-dir="src/com/polyvi/xface/extension/app" />
      </platform>
