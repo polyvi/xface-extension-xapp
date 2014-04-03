@@ -49,3 +49,10 @@
  *  issue 3 App: setTelLinkEnable does not work.Solution:delete this test
  *  fix bug http://gitlab.polyvi.com/xface/xface-extension-xapp/issues/2
  *  Incremented plugin version on dev branch to 1.0.3-dev
+
+
+## 1.0.4 (Thu Apr 03 2014)
+
+
+ *  issue 5 app->setWifiSleepDefault/setWifiSleepNeverWhilePlugged/setWifiSleepNever has no result. Bug reason:missing android.permission.WRITE_SETTINGS in AndroidManifest.xml. Solution:Add it in AndroidManifest.xml
+ *  Incremented plugin version on dev branch to 1.0.4-dev
